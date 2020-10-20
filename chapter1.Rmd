@@ -1,4 +1,24 @@
 
 # About the project
 
-*Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you can use R Markdown syntax.*
+*Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you should use R Markdown syntax.*
+
+```{r}
+# This is a so-called "R chunk" where you can write R code.
+
+date()
+
+```
+The text continues here.
+I have some experience to work in R studio, but I do not have any experience of using GitHub and R Markdown. Therefore facing some difficulties to use these two tools. But I am also keen to learn about these two tools. I hope during the time being  would be familiar R Markdown and GitHub.
+
+From this course I expect to learn step by step methods for analysing data systematically by using various statistical tools.I heard about this course from the coordinators of doctoral programme of Helsinki University.
+
+
+I read the book "R for Health Data Science" until chapter 4. This book is really helpful to learn R tools. In this book all the important topics explained precisely and briefly to use RStudio. To me the most interesting topic was using  tidyverse package. I never knew that how tidyverse package make the life easy for data frame management by using various functions such as mutate(), filter(), arrange() etc.I am excited to learn the use of R Markdown, it seems extremely helpfull to produce nice reports in R.
+
+Link for github repository:
+https://github.com/khaleda58/IODS-project
+
+https://khaleda58.github.io/IODS-project/
+
