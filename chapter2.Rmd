@@ -10,7 +10,7 @@
 library(tidyverse)
 library(ggplot2)
 ```
-
+#
 ## Step 1
 ## Reading data
 ```{r}
