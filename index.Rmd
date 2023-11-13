@@ -12,7 +12,7 @@ output:
 ---
 
 ***
-
+#####
 # Introduction to Open Data Science - Course Project
 
 ```{r child = "chapter1.Rmd"}
