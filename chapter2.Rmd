@@ -1,4 +1,4 @@
-# Insert chapter 2 title here
+# Linear Regression Analysis
 
 *Describe the work you have done this week and summarize your learning.*
 
@@ -6,8 +6,126 @@
 - Assume the reader has an introductory course level understanding of writing and reading R code as well as statistical methods.
 - Assume the reader has no previous knowledge of your data or the more advanced methods you are using.
 
+## Loading required packages
 ```{r}
-date()
+
+library(tidyverse)
+library(ggplot2)
 ```
 
-Here we go again...
+## Step 1
+## Reading data
+```{r}
+
+students2014 <- read.csv("Data/learning2014.csv")
+
+dim(students2014)
+str(students2014)
+```
+In this data set, 166 observations of 7 variables are available. This data set tells about the points obtained from a group of people through answering some questionnaires. Group of people were categorized based on gender, age and attitude, additionally questionnaires were categorized into: (1) deep questions which variable name is "deep", (2) surface questions, which variable name is "surf" and (3) strategic question, which variable name is "stra".  
+
+## Step 2
+### Graphical overview
+```{r}
+
+# Access the gglot2 library
+library(ggplot2)
+
+# initialize plot with data and aesthetic mapping
+p1 <- ggplot(students2014, aes(x = attitude, y = points))
+
+# define the visualization type (points)
+p2 <- p1 + geom_point()
+
+# draw the plot
+p2
+
+# add a regression line
+p3 <- p2 + geom_smooth(method = "lm")
+
+# add a main title
+p4 <- p3 + ggtitle('Students attitude versus exam points')
+
+p4
+```
+This above scatter plots indicates the linear relationship between points and attitude.
+
+
+### Grafical views with all the variables
+
+```{r,}
+
+# access the GGally and ggplot2 libraries
+library(GGally)
+library(ggplot2)
+# create a more advanced plot matrix with ggpairs()
+p <- ggpairs(students2014, mapping = aes(col = gender, alpha = 0.3), lower = list(combo = wrap("facethist", bins = 20)))
+
+p
+
+```
+This output shows the summary of the relationship between different variables. For example from the top left picture we can see that the there is difference of mean points between male and female. We can see some outliers in the boxplot of age, attitude and deep variables. From the histogram and skewness graph, we can say that when gender has been categorized based on attitude, strategic question, deep question and surface question, they are normally distributed but in other cases they are not normally distributed. From the scatter plot we can say that none of the variables have linear relationship between then except points and attitude.
+
+## Step 3
+### Regression model
+```{r}
+
+# fit a linear model
+my_model1 <- lm(points ~ gender + age + attitude, data = students2014)
+summary(my_model1)
+
+```
+Here only attitude is significant. So I will exclude other insignificant variables.
+
+```{r}
+
+# Second model
+my_model2 <- lm(points ~ attitude + deep + stra, data = students2014)
+summary(my_model2)
+
+```
+Here again attitude is significant and stra get one star and deep is insignificant. So I will include the attitude and stra as the explanatory variable and exclude all other variables from the final model since they are not significant.
+
+```{r}
+
+# Final model
+final_model <- lm(points ~ attitude + stra, data = students2014)
+summary(final_model)
+
+```
+The interaction between these two variables has also been checked, interaction was not significant, that is why I excluded the interaction from th model.
+
+
+## Step 4
+### The linear regression equation and explation of equation based on fitted model
+
+Points = 8.9729 + 3.4658 * attitude + 0.9137 * stra
+
+intercept = 8.9729 is the obtained points for the people, irrespective to attitude and strategic question.
+
+attitude slope = 3.4658 is the additional points for the people who has attitude
+
+stra slope = 0.9137 is the difference of points between strategic question and non strategic question who has attitude
+
+Additionally, from the Adjusted R-squared value, we can say that 19% of variation has been explained by this model.
+
+## Step 5
+### Checking the assumptions of the model
+
+```{r}
+
+plot(final_model)
+
+```
+
+#### The assumptions of linear regression model:
+First, linear regression needs the relationship between the independent and dependent variables to be linear. 
+Secondly, the linear regression analysis requires all variables to be multivariate normal.
+Thirdly, linear regression assumes that there is little or no multicollinearity in the data.
+Fourth, linear regression analysis requires that there is little or no autocorrelation in the data.
+
+#### Checking the model validation:
+From the residuals vs Fitted value, we can not see clear skewness, so we can say that fitted values have been distributed throughout the plot.
+
+The qq-plot is also looks good, so we can say that the assumptions of the model have been satisfied.
+
