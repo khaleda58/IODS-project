@@ -1,0 +1,110 @@
+---
+title: "chapter3"
+output: html_document
+date: "2023-11-17"
+---
+
+# Chapter 3: Logistic regression analysis
+
+## Step 2
+
+```{r}
+alc_data <- read.csv("data/alc.csv")
+
+library(tidyverse)
+glimpse(alc_data)
+
+```
+In this data set, there are 370 observations ans 35 variables. The data is about prediction of students grade in two distinct subjects such as Mathematics and Portuguese language at the final year of secondary education. The three academic year have been referred by  G1, G2 and G3. The data also contain demographic, social and school related features through measuring various related variables.
+
+## Step 3
+```{r}
+
+# access the tidyverse libraries tidyr, dplyr, ggplot2
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+# glimpse at the alc data
+
+
+#Producing summary statistics by group
+alc_data %>% group_by(high_use) %>% summarise(count = n())
+
+# initialize a plot of high_use and G3
+g1 <- ggplot(alc_data, aes(x = high_use, y = G3))
+
+# define the plot as a boxplot and draw it
+g1 + geom_boxplot() + ylab("grade")+facet_wrap(~sex)+
+  ggtitle("Students grades by alcohol consumption and sex")
+
+```
+From the table, we can see that number male high alcohol user is higher than the number female high alcohol user. This box plot indicates that median grade of female high alcohol user does not differ than low alcohol user. but in case of male, alcohol consumption affect the grades in final year. High male alcohol user has lower median grade than the low male alcohol users. 
+```{r}
+# initialize a plot of high_use and absences
+
+g2 <- ggplot(alc_data, aes(x = absences, y = high_use))
+g2+geom_boxplot()+facet_wrap(~ sex) + ggtitle("Students alcohol consumption by absence in school and sex")
+
+```
+
+From this boxplot we can say female students absence do not vary alcohol consumption but in case of male it varies.
+
+# Step 5
+## Logistic regression model
+
+```{r}
+# find the model with glm()
+m <- glm(high_use ~ failures + absences, data = alc_data, family = "binomial")
+summary(m)
+m$coefficients
+
+```
+The summary of the model indicates that if we exclude the categorical variable failures, that will affect the model significantly, since the p value is less that 0.001 at the 95% confidence interval. If we exclude the other categorical variable absence that will also affect the model significantly, since the p value < 0.001.
+The p value of the table tells us whether the pairwise difference between the coefficient of the reference class and the other class is different from zero or not. p value less than 0.05 at the 95% confidence interval indicates that difference from zero is significant. 
+
+The exponents of the coefficients of a logistic regression model can be interpreted as odds ratios between a unit change (vs. no change) in the corresponding explanatory variable.
+
+```{r}
+
+# find the model with glm()
+m1 <- glm(high_use ~ failures + absences + sex, data = alc_data, family = "binomial")
+
+summary(m1)
+
+# compute odds ratios (OR)
+OR1 <- coef(m1) %>% exp
+
+# compute confidence intervals (CI)
+confint(m1)
+
+# print out the odds ratios with their confidence intervals
+cbind(OR1, confint(m1))
+
+
+```
+In this m1 model I added another categorical variable (sex) and in addition to previously selected categorical variables, now sexM also statistically significant. The AIC value also lower for this model m1 compared to the previous model m. Therefore, this model is can be considered as the fitted model.
+The calculated odds ratio (OR1) indicates:
+failures (1.8177381): effects of failures for consuming high alcohol
+absence (1.0968598): effects of absence in school for consuming high alcohol
+sexM (2.7109881): effect of males for consuming high alcohol.
+
+# Step 6
+## Binary predictions
+
+```{r, echo=FALSE}
+# Adding probability and predicted value to the data frame based on fitted model m1 <- glm(high_use ~ sex + failures + absences, data = alc_data, family = "binomial")
+
+alc_data <- mutate(alc_data, probability = predict(m1, type = "response"))
+alc_data <- mutate(alc_data, prediction = probability > 0.5)
+
+table(high_use = alc_data$high_use, prediction = alc_data$prediction)
+
+# see the last ten original classes, predicted probabilities, and class predictions
+select(alc_data, failures, absences, sex, high_use, probability, prediction) %>% tail(10)
+
+# initialize a plot of 'high_use' versus 'probability' in 'alc_data'
+g <- ggplot(alc_data, aes(x = "probability", y = "high_use"))
+g + geom_point()
+```
+
