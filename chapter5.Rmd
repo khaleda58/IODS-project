@@ -1,0 +1,173 @@
+---
+title: "chapter 5"
+author: "Khaleda Begum"
+date: "2023-11-30"
+output: html_document
+---
+## Assignment 5
+### Dimensionality reduction techniques
+#### Data visualization and graphical presenttion
+```{r, message=FALSE, warning=FALSE}
+
+#converting row names as the column name
+
+human <- read.csv("data/human.csv")
+
+library(tibble)
+human_ <- column_to_rownames(human, "Country")
+
+#Visualisation of human_ variables
+library(GGally)
+summary(human_)
+ggpairs(human_, progress = FALSE)
+
+
+```
+
+From the summary of the human data, we can see that the scale of the variables differ largely from one to another. For example, the ratio of females and males education in seconder education ranges from 0.18 to 1.5 but the maternal mortality ratio ranges from 1.0 to 1100. Same is true for other variables. From the pair plots we can see the relationship of one variable to another, where many variables does not show any relationship with other, some shows positive relationship and other shows negative relationship. For example, Life.Exp and Edu.Exp, Mat.Mor and Ado.Birth showed positive relationship with each other. However, Life.Exp and Mat.Mor, Edu.Exp and Ado.Birth showed negative relationship. Some other variable also showed some non-linear relationship such as, GNI and Mat.Mor, GNI and Ado.Birth.
+
+
+```{r, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(ggplot2)
+human_ %>% 
+  gather() %>% 
+  ggplot(aes(sample=value)) + 
+  geom_qq() + 
+  geom_qq_line(colour = "blue") +
+  facet_wrap('key', scales='free')
+
+human_ %>% 
+  gather() %>% 
+  ggplot(aes(y=value, x='')) + 
+  geom_boxplot() + 
+  facet_wrap('key', scales='free')
+
+```
+
+From the qqplot we can understand the normality of the variables, where it seems that except Edu.Exp and Parli.F, all other valriables are not normally distributed. From the box plot, it seems there are some outliers in Ado.Birth, GNI, Mat.Mor, Labo.FM, Parli.F and Edu.FM.
+
+```{r, warning=FALSE}
+# computing the correlation matrix and visualize it with corrplot
+library(corrplot)
+cor(human_)
+
+```
+Correlation matrix expresses the strength and direction of the correlation with one variable to another.Correlation matrix ranges from 1 to -1, positive number means positive correlation and negative number means negative correlation. The closer the number to 1(or -1), the stronger the correlation. From the above matrix we can see highest positive correlation between (0.76) adolescent birth rate and maternal mortality rate, which make sense that higher the rate of women who give birth baby at their younger age, higher the possibility of mortality. We can also see strong negative correlation between maternal mortality (Mat.Mor) and expected years of schooling (Edu.Exp) as well as adolescent birth rate (Ado.Birth) and expected years of schooling.
+
+## principal component analysis (PCA) on the raw (non-standardized) human data
+
+```{r, message=FALSE, warning=FALSE}
+
+# perform principal component analysis on the raw (non-standardized) human data
+pca_human <- prcomp(human_)
+pca_human_s <- summary(pca_human)
+pca_human_s
+
+pca_human_pr <- round(1 * pca_human_s$importance[2,], digits = 5)
+
+pca_human_pr
+
+# create object pc_lab to be used as axis labels
+paste0(names(pca_human_pr), " (", pca_human_pr, "%)")
+
+# draw a biplot of the principal component representation and the original variables
+biplot(pca_human, choices = 1:2, col = c("grey40", "deeppink2"), cex = c(0.8, 1))
+
+
+```
+
+## Standardizing the variables in human data
+```{r, echo=FALSE, message=FALSE}
+human_std <- scale(human_)
+
+summary(human_std)
+
+pca_human_std <- prcomp(human_std)
+pca_pr_std_s <- summary(pca_human_std)
+pca_pr_std_s
+
+pca_pr_std <- round(1*pca_pr_std_s$importance[2,], digits = 2)
+paste0(names(pca_pr_std), "(", pca_pr_std, "%)")
+
+biplot(pca_human_std, choices = 1:2, col = c("grey40", "deeppink2"))
+
+```
+
+The PCA results of non-standardized human data differ largely than the standardized human data. PCA should works under the assumption of normally distributed data. In the data exploration part we have seen from the qqplot of non-standardized human data, variables were not normally distributed. The violation of this assumption has also been reflected in the PCA result of non-standardized data, where we can see that the standard deviation of variables is very large and the variance of the variables is much lower. The scenario has been changed drastically after standardizing the human data. The PCA summary of standardized data showed much lower standard deviation and higher variance of the variables.
+
+### Interpretation of biplot
+
+A biplot is a way of visualizing the connections between two representations of the same data. First, a simple scatter plot is drawn where the observations are represented by two principal components (PC's). Then, arrows are drawn to visualize the connections between the original variables and the PC's. The following connections hold:
+
+- The angle between the arrows can be interpreted as the correlation between the variables.
+- The angle between a variable and a PC axis can be interpreted as the correlation between the two.
+- The length of the arrows are proportional to the standard deviations of the variables.
+
+The biplot with non-standardized human data did not show any relationship of the variables with two components as well as no correlation between them. However, from the biplot of standardized data we can see that there is a high positive correlation of Mat.Mor, Abo.Birth, and slight positive correlation of Labo.FM with first component. So the first component measure the reason behind the maternal mortality rate, which may explain the lower female labor force. On the other hand we can see strong negative correlation of Edu.Exo and Life.Exp, and slight negative correlation of Parli.F with the second component. So this component represents the quality of education and life of of male and female and the probable explanation for the lower presence of female in the parliament.
+
+
+## Tea data:
+
+```{r, warning=FALSE, message=FALSE}
+
+#Reading tea data
+library(readr)
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open-Data-Science/master/datasets/tea.csv", stringsAsFactors = TRUE)
+
+# column names to keep in the dataset
+keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
+
+# select the 'keep_columns' to create a new dataset
+tea_time <- select(tea, keep_columns)
+
+# look at the summaries and structure of the data
+str(tea_time)
+summary(tea_time)
+
+# visualize the dataset
+library(ggplot2)
+pivot_longer(tea_time, cols = everything()) %>% 
+  ggplot(aes(value)) + geom_bar(fill = "#00AFBB")+facet_wrap("name", scales = "free")
+
+```
+
+From the tea I have selected six variables those are related to tea drinking behaviour. Here all the variables are categorical variables with multiple levels. From the bar plot of six variables we can see that the highest number of people use tea bag, people mostly consume raw tea compared to the use of tea with lemon, milk and other. The large number people drink tea during Not.lunch time, there is not much variation of using sugar and non sugar tea. The use of Earl Grey tea is highest and highest number of people still buy tea from the chain shop.
+
+### Multiple Correspondence Analysis (MCA) 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+# multiple correspondence analysis
+library(FactoMineR)
+mca <- MCA(tea_time, graph = FALSE)
+
+# summary of the model
+summary(mca)
+
+# visualize MCA
+plot(mca, invisible=c("ind"), graph.type = "classic", habillage = "quali")
+```
+
+MCA is a method to analyze qualitative data and it is an extension of Correspondence analysis (CA). MCA can be used to detect patterns or structure in the data as well as in dimension reduction.
+
+From the factor map we can see that dimension 1 can describe 15% variability and dimension 2 can describe 14% variablity. We can also see that sub-categories of each variable is not overlapped which means that sub-categories are significantly separated from each other.
+
+Explanation:
+Dim.1 = coordinate value of the first axis
+ctr = contribution to the construction of axis
+cos2 = quality of representation followed by the squared cosine
+v.test = test statistics
+v.test < -2 => the coordinate of the category is significantly less than 0
+v.test > 2 => the coordinate of the category is significantly greater than 0
+Categorical variables (eta2) = correlation ratio of each variable
+
+
+
+
