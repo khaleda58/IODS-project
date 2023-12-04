@@ -4,7 +4,7 @@ author: "Khaleda Begum"
 date: "2023-11-30"
 output: html_document
 ---
-## Assignment 5
+# Assignment 5
 ### Dimensionality reduction techniques
 #### Data visualization and graphical presenttion
 ```{r, message=FALSE, warning=FALSE}
@@ -125,6 +125,7 @@ tea <- read.csv("https://raw.githubusercontent.com/KimmoVehkalahti/Helsinki-Open
 keep_columns <- c("Tea", "How", "how", "sugar", "where", "lunch")
 
 # select the 'keep_columns' to create a new dataset
+
 tea_time <- dplyr::select(tea, all_of(keep_columns))
 
 # look at the summaries and structure of the data
